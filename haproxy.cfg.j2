@@ -45,5 +45,5 @@ backend backendnodes
     http-request add-header X-Forwarded-Proto https if { ssl_fc }
     option httpchk HEAD / HTTP/1.1\r\nHost:localhost
     {% for hosts in groups['webservers'] %}
-    server  {{ hosts }} {{hostvars[hosts]["ansible_default_ipv4"]["address"]}}:7000
+    server  {{ hosts }} {{hostvars[hosts]["ansible_default_ipv4"]["address"]}}:5000
     {% endfor %}
