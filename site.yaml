@@ -1,0 +1,96 @@
+- hosts: all
+  gather_facts: yes
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Update and upgrade package cache
+      apt:
+        update_cache: yes
+        upgrade: yes
+        autoremove: yes
+        autoclean: yes
+
+- hosts: HAproxy
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Install HAproxy
+      apt:
+        name: haproxy
+        state: latest 
+        update_cache: yes
+
+    - name: Configure HAproxy
+      template:
+        src: haproxy.cfg
+        dest: /etc/haproxy/haproxy.cfg
+
+    - name: Restart HAproxy
+      service:
+        name: haproxy
+        state: restarted
+
+- hosts: devA:devB:devC
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Webservers update and flask deployment
+      apt:
+        update_cache: yes
+
+    - name: Install python3-pip and Gunicorn
+      apt:
+        name: "{{ item }}"
+        state: latest
+        update_cache: yes    
+        loop: ['python3-pip', 'gunicorn']
+
+    - name: Flask installation
+      pip:
+        name: flask
+        state: latest
+
+    - name: Copy the flask app code to the servers
+      copy:
+        src:  /$PWD/application2.py
+        dest: /home/ubuntu/application2.py
+        owner: ubuntu
+        mode: '0644'
+
+    - name: Running Flask application using Gunicorn
+      shell:  gunicorn -w 2 -D -b 0.0.0.0:5000 application2:app
+
+- hosts: HAproxy
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Final restart of HAproxy
+      service:
+        name: haproxy
+        state: restarted
+
+
+
+
+
+
+
+
+
+
+
+
+
+       
+
+
+
+
+
+
+
+
+
+
+
+      
